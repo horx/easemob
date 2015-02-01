@@ -1,0 +1,22 @@
+{
+  "name": "easemob",
+  "version": "0.0.1",
+  "description": "easemob nodejs api",
+  "main": "easemob.js",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
+  "dependencies": {
+    "redis": "^0.12.1",
+    "request": "^2.51.0",
+    "underscore": "^1.7.0",
+    "async": "^0.2.5"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "should": "^4.4.2"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  }
+}
