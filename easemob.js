@@ -26,7 +26,7 @@ function Em (opts) {
   this.appName = opts.appName;
   this.url = this.apiUrl + this.orgName + '/' + this.appName;
   this.redisConf = _.extend(opts.redis || {}, {host: "localhost", port: 6379});
-  this.redis = redis.createClient(this.redisConf.port, this.redisConf.host);
+  this.emRedis = redis.createClient(this.redisConf.port, this.redisConf.host);
 }
 
 Em.prototype.getToken = function(callback) {
@@ -36,7 +36,7 @@ Em.prototype.getToken = function(callback) {
 
   async.waterfall([
     function(next) {
-      self.redis.get(key, next);
+      self.emRedis.get(key, next);
     },
     function(token, next) {
       if (token) return callback(null, token);
@@ -57,7 +57,7 @@ Em.prototype.getToken = function(callback) {
 
         if (!token || !expiredIn) return next('get token err');
 
-        emRedis.multi().set(key, token).expire(key, expiredIn - 600).exec(next);
+        self.emRedis.multi().set(key, token).expire(key, expiredIn - 600).exec(next);
       });
     }
   ], function(err) {
@@ -73,7 +73,7 @@ Em.prototype.createUser = function(user, callback) {
     json: {
       username: user.username,
       password: user.password,
-      nickname: user.nickName
+      nickname: user.nickname
     },
     method: 'POST'
   };
