@@ -25,8 +25,14 @@ function Em (opts) {
   this.orgName = opts.orgName;
   this.appName = opts.appName;
   this.url = this.apiUrl + this.orgName + '/' + this.appName;
-  this.redisConf = _.extend(opts.redis || {}, {host: "localhost", port: 6379});
-  this.emRedis = redis.createClient(this.redisConf.port, this.redisConf.host);
+  if (opts.redis) {
+    this.redisConf = _.extend(opts.redis || {}, {host: "localhost", port: 6379});
+    this.emRedis = redis.createClient(this.redisConf.port, this.redisConf.host);
+  }
+  else {
+    this.loadToken=opts.loadToken;
+    this.saveToken=opts.saveToken;
+  }
 }
 
 Em.prototype.getToken = function(callback) {
@@ -36,7 +42,8 @@ Em.prototype.getToken = function(callback) {
 
   async.waterfall([
     function(next) {
-      self.emRedis.get(key, next);
+      if (self.emRedis) self.emRedis.get(key, next);
+      else self.loadToken(next);
     },
     function(token, next) {
       if (token) return callback(null, token);
@@ -56,8 +63,8 @@ Em.prototype.getToken = function(callback) {
         ctx.token = token;
 
         if (!token || !expiredIn) return next('get token err');
-
-        self.emRedis.multi().set(key, token).expire(key, expiredIn - 600).exec(next);
+        if (self.emRedis) self.emRedis.multi().set(key, token).expire(key, expiredIn - 600).exec(next);
+        else self.saveToken(token, next);
       });
     }
   ], function(err) {
